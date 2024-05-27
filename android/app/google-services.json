@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1059852174167",
+    "project_id": "app-avaliacao2-alexcolman",
+    "storage_bucket": "app-avaliacao2-alexcolman.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1059852174167:android:2df76353f19852205db412",
+        "android_client_info": {
+          "package_name": "com.example.fatec_rp_noite_pdm2024_app_avaliacao2_alexcolman_igor"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD06cJCYa6mzfZAGMQqwws5KQ-6fYfvu9E"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
