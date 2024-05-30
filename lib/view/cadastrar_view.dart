@@ -1,8 +1,12 @@
-// ignore_for_file: prefer_const_constructors
+// ignore_for_file: prefer_const_constructors, prefer_const_literals_to_create_immutables, avoid_unnecessary_containers
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
 import '../controller/login_controller.dart';
+
+import '../controller/usuario_controller.dart';
+import '../model/usuario.dart';
 
 class CadastrarView extends StatefulWidget {
   const CadastrarView({super.key});
@@ -15,10 +19,14 @@ class CadastrarView extends StatefulWidget {
 
 class _CadastrarViewState extends State<CadastrarView> {
   final _formKey = GlobalKey<FormState>();
+  TextEditingController txtNome = TextEditingController();
   TextEditingController txtEmail = TextEditingController();
   TextEditingController txtSenha = TextEditingController();
   TextEditingController txtConfirmarSenha = TextEditingController();
-  TextEditingController txtNome = TextEditingController();
+  TextEditingController txtNomeEmpresa = TextEditingController();
+  TextEditingController txtEnderecoEmpresa = TextEditingController();
+  TextEditingController txtTelefone = TextEditingController();
+  String _funcaoEmpresa = 'Dono';
 
   @override
   void initState() {
@@ -131,6 +139,80 @@ class _CadastrarViewState extends State<CadastrarView> {
                       },
                     ),
                   ),
+                  Container(
+                    padding: const EdgeInsets.fromLTRB(10, 10, 10, 0),
+                    child: TextFormField(
+                      controller: txtNomeEmpresa,
+                      decoration: const InputDecoration(
+                        prefixIcon: Icon(Icons.business),
+                        border: OutlineInputBorder(),
+                        labelText: 'Nome da Empresa',
+                      ),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Por favor, insira o nome da empresa';
+                        }
+                        return null;
+                      },
+                    ),
+                  ),
+                  Container(
+                    padding: const EdgeInsets.fromLTRB(10, 10, 10, 0),
+                    child: TextFormField(
+                      controller: txtEnderecoEmpresa,
+                      decoration: const InputDecoration(
+                        prefixIcon: Icon(Icons.location_on),
+                        border: OutlineInputBorder(),
+                        labelText: 'Endereço da Empresa',
+                      ),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Por favor, insira o endereço da empresa';
+                        }
+                        return null;
+                      },
+                    ),
+                  ),
+                  Container(
+                    padding: const EdgeInsets.fromLTRB(10, 10, 10, 0),
+                    child: DropdownButtonFormField<String>(
+                      value: _funcaoEmpresa,
+                      decoration: InputDecoration(
+                        prefixIcon: Icon(Icons.work),
+                        border: OutlineInputBorder(),
+                        labelText: 'Função na Empresa',
+                      ),
+                      items: ['Dono', 'Gerente', 'Funcionario']
+                          .map((String value) {
+                        return DropdownMenuItem<String>(
+                          value: value,
+                          child: Text(value),
+                        );
+                      }).toList(),
+                      onChanged: (newValue) {
+                        setState(() {
+                          _funcaoEmpresa = newValue!;
+                        });
+                      },
+                    ),
+                  ),
+                  Container(
+                    padding: const EdgeInsets.fromLTRB(10, 10, 10, 0),
+                    child: TextFormField(
+                      controller: txtTelefone,
+                      decoration: const InputDecoration(
+                        prefixIcon: Icon(Icons.phone),
+                        border: OutlineInputBorder(),
+                        labelText: 'Telefone',
+                      ),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Por favor, insira seu telefone';
+                        }
+                        return null;
+                      },
+                    ),
+                  ),
                   SizedBox(height: 40),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
@@ -146,13 +228,25 @@ class _CadastrarViewState extends State<CadastrarView> {
                           minimumSize: Size(140, 40),
                         ),
                         onPressed: () {
-                          _formKey.currentState!.validate();
-                          LoginController().criarConta(
-                            context,
-                            txtNome.text,
-                            txtEmail.text,
-                            txtSenha.text,
-                          );
+                          if (_formKey.currentState!.validate()) {
+                            LoginController().criarConta(
+                              context,
+                              txtNome.text,
+                              txtEmail.text,
+                              txtSenha.text,
+                            );
+                            var u = Usuario(
+                              LoginController().idUsuario(),
+                              txtNome.text,
+                              txtEmail.text,
+                              txtSenha.text,
+                              txtNomeEmpresa.text,
+                              txtEnderecoEmpresa.text,
+                              _funcaoEmpresa,
+                              txtTelefone.text,
+                            );
+                            UsuarioController().adicionar(context, u);
+                          }
                         },
                         child: Text('cadastrar'),
                       ),
