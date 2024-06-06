@@ -8,6 +8,7 @@ import 'firebase_options.dart';
 import 'view/cadastrar_view.dart';
 import 'view/login_view.dart';
 import 'view/principal_view.dart';
+import 'view/1produto_view.dart';
 
 Future<void> main() async {
   await Firebase.initializeApp(
@@ -34,6 +35,8 @@ class MainApp extends StatelessWidget {
         'login': (context) => LoginView(),
         'cadastrar': (context) => CadastrarView(),
         'principal': (context) => PrincipalView(),
+        'produto':(context) => CadastrarProdutoView(),
+
       },
     );
   }

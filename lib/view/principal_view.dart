@@ -1,8 +1,10 @@
 // ignore_for_file: prefer_const_constructors, sized_box_for_whitespace, prefer_const_literals_to_create_immutables
 
 import 'package:flutter/material.dart';
-
 import '../controller/login_controller.dart';
+// import 'package:seu_app/telas/tela2.dart';
+// import 'package:seu_app/telas/tela3.dart';
+// import 'package:seu_app/telas/tela4.dart';
 
 class PrincipalView extends StatefulWidget {
   const PrincipalView({super.key});
@@ -22,11 +24,12 @@ class _PrincipalViewState extends State<PrincipalView> {
         title: Row(
           children: [
             Expanded(
-                child: Text('Inventário de Estoque',
-                    style: TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.w500,
-                        fontSize: 20))),
+              child: Text('Inventário de Estoque',
+                  style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w500,
+                      fontSize: 20)),
+            ),
             FutureBuilder<String>(
               future: LoginController().usuarioLogado(),
               builder: (context, snapshot) {
@@ -106,12 +109,77 @@ class _PrincipalViewState extends State<PrincipalView> {
                 onTap: () {
                   LoginController().logout();
                   Navigator.pushReplacementNamed(context, 'login');
-                  ;
                 },
               ),
             ),
           ],
         ),
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(20.0),
+        child: GridView.count(
+          crossAxisCount: 2,
+          crossAxisSpacing: 10.0,
+          mainAxisSpacing: 10.0,
+          children: [
+            IconButtonWidget(
+              icon: Icons.category,
+              label: 'Produtos',
+              onTap: () {
+                Navigator.pushNamed(context, 'produto');
+              },
+            ),
+            IconButtonWidget(
+              icon: Icons.face,
+              label: 'Clientes',
+              onTap: () {
+                Navigator.pushNamed(context, 'cliente');
+              },
+            ),
+            IconButtonWidget(
+              icon: Icons.calendar_today,
+              label: 'Agenda',
+              onTap: () {
+                Navigator.pushNamed(context, 'agenda');
+              },
+            ),
+            IconButtonWidget(
+              icon: Icons.group,
+              label: 'Fornecedores',
+              onTap: () {
+                Navigator.pushNamed(context, 'fornecedor');
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class IconButtonWidget extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final VoidCallback onTap;
+
+  const IconButtonWidget({
+    required this.icon,
+    required this.label,
+    required this.onTap,
+    Key? key,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(icon, size: 50.0, color: Colors.blueAccent),
+          SizedBox(height: 10),
+          Text(label, style: TextStyle(fontSize: 16.0)),
+        ],
       ),
     );
   }
