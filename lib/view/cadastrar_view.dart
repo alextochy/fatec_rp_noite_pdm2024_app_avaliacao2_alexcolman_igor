@@ -1,6 +1,7 @@
-// ignore_for_file: prefer_const_constructors, prefer_const_literals_to_create_immutables, avoid_unnecessary_containers
+// ignore_for_file: prefer_const_constructors, prefer_const_literals_to_create_immutables, avoid_unnecessary_containers, use_build_context_synchronously
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 import '../controller/login_controller.dart';
@@ -227,25 +228,27 @@ class _CadastrarViewState extends State<CadastrarView> {
                         style: OutlinedButton.styleFrom(
                           minimumSize: Size(140, 40),
                         ),
-                        onPressed: () {
+                        onPressed: () async {
                           if (_formKey.currentState!.validate()) {
-                            LoginController().criarConta(
+                            User? user = await LoginController().criarConta(
                               context,
-                              txtNome.text,
-                              txtEmail.text,
-                              txtSenha.text,
+                              txtNome.text.trim(),
+                              txtEmail.text.trim(),
+                              txtSenha.text.trim(),
                             );
-                            var u = Usuario(
-                              LoginController().idUsuario(),
-                              txtNome.text,
-                              txtEmail.text,
-                              txtSenha.text,
-                              txtNomeEmpresa.text,
-                              txtEnderecoEmpresa.text,
-                              _funcaoEmpresa,
-                              txtTelefone.text,
-                            );
-                            UsuarioController().adicionar(context, u);
+                            if (user != null) {
+                              var u = Usuario(
+                                user.uid,
+                                txtNome.text.trim(),
+                                txtEmail.text.trim(),
+                                txtSenha.text.trim(),
+                                txtNomeEmpresa.text.trim(),
+                                txtEnderecoEmpresa.text.trim(),
+                                _funcaoEmpresa,
+                                txtTelefone.text.trim(),
+                              );
+                              UsuarioController().adicionar(context, u);
+                            }
                           }
                         },
                         child: Text('cadastrar'),
