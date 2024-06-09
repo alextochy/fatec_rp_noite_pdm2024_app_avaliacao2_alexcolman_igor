@@ -16,178 +16,6 @@ class Produto {
   });
 }
 
-class CadastrarProdutoView extends StatefulWidget {
-  const CadastrarProdutoView({Key? key}) : super(key: key);
-
-  @override
-  State<CadastrarProdutoView> createState() => _CadastrarProdutoViewState();
-}
-
-class _CadastrarProdutoViewState extends State<CadastrarProdutoView> {
-  final _formKey = GlobalKey<FormState>();
-  final _nomeController = TextEditingController();
-  final _descricaoController = TextEditingController();
-  final _quantidadeController = TextEditingController();
-  final _precoController = TextEditingController();
-  final _categoriaController = TextEditingController();
-
-  List<Produto> produtos = [];
-
-  @override
-  void dispose() {
-    _nomeController.dispose();
-    _descricaoController.dispose();
-    _quantidadeController.dispose();
-    _precoController.dispose();
-    _categoriaController.dispose();
-    super.dispose();
-  }
-
-  void _cadastrarProduto() {
-    if (_formKey.currentState!.validate()) {
-      Produto novoProduto = Produto(
-        nome: _nomeController.text,
-        descricao: _descricaoController.text,
-        quantidade: int.parse(_quantidadeController.text),
-        preco: double.parse(_precoController.text),
-        categoria: _categoriaController.text,
-      );
-      setState(() {
-        produtos.add(novoProduto);
-      });
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Produto cadastrado com sucesso!')),
-      );
-      _limparCampos();
-    }
-  }
-
-  void _limparCampos() {
-    _nomeController.clear();
-    _descricaoController.clear();
-    _quantidadeController.clear();
-    _precoController.clear();
-    _categoriaController.clear();
-  }
-
-  void _mostrarListaProdutos() {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => ListaProdutosView(produtos: produtos, onUpdate: _atualizarProduto, onDelete: _excluirProduto),
-      ),
-    );
-  }
-
-  void _atualizarProduto(Produto produto, int index) {
-    setState(() {
-      produtos[index] = produto;
-    });
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Produto atualizado com sucesso!')),
-    );
-  }
-
-  void _excluirProduto(int index) {
-    setState(() {
-      produtos.removeAt(index);
-    });
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Produto excluído com sucesso!')),
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Cadastro de Produto'),
-        backgroundColor: Colors.blueAccent,
-        actions: [
-          IconButton(
-            icon: Icon(Icons.list),
-            onPressed: _mostrarListaProdutos,
-          ),
-          IconButton(
-            icon: Icon(Icons.search),
-            onPressed: () => showSearch(
-              context: context,
-              delegate: ProdutoSearchDelegate(produtos: produtos, onUpdate: _atualizarProduto, onDelete: _excluirProduto),
-            ),
-          ),
-        ],
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Form(
-          key: _formKey,
-          child: ListView(
-            children: [
-              TextFormField(
-                controller: _nomeController,
-                decoration: InputDecoration(labelText: 'Nome do Produto'),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Por favor, insira o nome do produto';
-                  }
-                  return null;
-                },
-              ),
-              TextFormField(
-                controller: _descricaoController,
-                decoration: InputDecoration(labelText: 'Descrição'),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Por favor, insira a descrição';
-                  }
-                  return null;
-                },
-              ),
-              TextFormField(
-                controller: _quantidadeController,
-                decoration: InputDecoration(labelText: 'Quantidade'),
-                keyboardType: TextInputType.number,
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Por favor, insira a quantidade';
-                  }
-                  return null;
-                },
-              ),
-              TextFormField(
-                controller: _precoController,
-                decoration: InputDecoration(labelText: 'Preço'),
-                keyboardType: TextInputType.number,
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Por favor, insira o preço';
-                  }
-                  return null;
-                },
-              ),
-              TextFormField(
-                controller: _categoriaController,
-                decoration: InputDecoration(labelText: 'Categoria'),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Por favor, insira a categoria';
-                  }
-                  return null;
-                },
-              ),
-              SizedBox(height: 20),
-              ElevatedButton(
-                onPressed: _cadastrarProduto,
-                child: Text('Cadastrar Produto'),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
 class ListaProdutosView extends StatelessWidget {
   final List<Produto> produtos;
   final Function(Produto, int) onUpdate;
@@ -266,25 +94,194 @@ class ListaProdutosView extends StatelessWidget {
       appBar: AppBar(
         title: Text('Lista de Produtos'),
         backgroundColor: Colors.blueAccent,
+        actions: [
+          IconButton(
+            icon: Icon(Icons.search),
+            onPressed: () {
+              showSearch(
+                context: context,
+                delegate: ProdutoSearchDelegate(
+                  produtos: produtos,
+                  onUpdate: onUpdate,
+                  onDelete: onDelete,
+                ),
+              );
+            },
+          ),
+          IconButton(
+            icon: Icon(Icons.add),
+            onPressed: () {
+              Navigator.pushNamed(
+                context,
+                'cadastrarProduto',
+              );
+            },
+          ),
+        ],
       ),
-      body: ListView.builder(
-        itemCount: produtos.length,
-        itemBuilder: (context, index) {
-          final produto = produtos[index];
-          return ListTile(
-            title: Text(produto.nome),
-            subtitle: Text(produto.descricao),
-            trailing: IconButton(
-              icon: Icon(Icons.delete),
-              onPressed: () {
-                onDelete(index);
+      body: produtos.isEmpty
+          ? Center(child: Text('Não existem produtos cadastrados'))
+          : ListView.builder(
+              itemCount: produtos.length,
+              itemBuilder: (context, index) {
+                final produto = produtos[index];
+                return ListTile(
+                        title: Text(produto.nome),
+                        subtitle: Text(produto.descricao),
+                        trailing: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            IconButton(
+                              icon: Icon(Icons.edit),
+                              onPressed: () {
+                                _editarProduto(context, produto, index);
+                              },
+                            ),
+                            IconButton(
+                              icon: Icon(Icons.delete),
+                              onPressed: () {
+                                onDelete(index);
+                              },
+                            ),
+                          ],
+                        ),
+                        onTap: () {
+                          _editarProduto(context, produto, index);
+                        },
+                      );
+
               },
             ),
-            onTap: () {
-              _editarProduto(context, produto, index);
-            },
-          );
-        },
+    );
+  }
+}
+
+class CadastrarProdutoView extends StatefulWidget {
+  final Function(Produto) onProdutoCadastrado;
+
+  const CadastrarProdutoView({Key? key, required this.onProdutoCadastrado}) : super(key: key);
+
+  @override
+  State<CadastrarProdutoView> createState() => _CadastrarProdutoViewState();
+}
+
+class _CadastrarProdutoViewState extends State<CadastrarProdutoView> {
+  final _formKey = GlobalKey<FormState>();
+  final _nomeController = TextEditingController();
+  final _descricaoController = TextEditingController();
+  final _quantidadeController = TextEditingController();
+  final _precoController = TextEditingController();
+  final _categoriaController = TextEditingController();
+
+  @override
+  void dispose() {
+    _nomeController.dispose();
+    _descricaoController.dispose();
+    _quantidadeController.dispose();
+    _precoController.dispose();
+    _categoriaController.dispose();
+    super.dispose();
+  }
+
+  void _cadastrarProduto() {
+    if (_formKey.currentState!.validate()) {
+      Produto novoProduto = Produto(
+        nome: _nomeController.text,
+        descricao: _descricaoController.text,
+        quantidade: int.parse(_quantidadeController.text),
+        preco: double.parse(_precoController.text),
+        categoria: _categoriaController.text,
+      );
+      widget.onProdutoCadastrado(novoProduto);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Produto cadastrado com sucesso!')),
+      );
+      _limparCampos();
+      Navigator.pop(context); // Retorna à lista de produtos após o cadastro
+    }
+  }
+
+  void _limparCampos() {
+    _nomeController.clear();
+    _descricaoController.clear();
+    _quantidadeController.clear();
+    _precoController.clear();
+    _categoriaController.clear();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Cadastro de Produto'),
+        backgroundColor: Colors.blueAccent,
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Form(
+          key: _formKey,
+          child: ListView(
+            children: [
+              TextFormField(
+                controller: _nomeController,
+                decoration: InputDecoration(labelText: 'Nome do Produto'),
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Por favor, insira o nome do produto';
+                  }
+                  return null;
+                },
+              ),
+              TextFormField(
+                controller: _descricaoController,
+                decoration: InputDecoration(labelText: 'Descrição'),
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Por favor, insira a descrição';
+                  }
+                  return null;
+                },
+              ),
+              TextFormField(
+                controller: _quantidadeController,
+                decoration: InputDecoration(labelText: 'Quantidade'),
+                keyboardType: TextInputType.number,
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Por favor, insira a quantidade';
+                  }
+                  return null;
+                },
+              ),
+              TextFormField(
+                controller: _precoController,
+                decoration: InputDecoration(labelText: 'Preço'),
+                keyboardType: TextInputType.number,
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Por favor, insira o preço';
+                  }
+                  return null;
+                },
+              ),
+              TextFormField(
+                controller: _categoriaController,
+                decoration: InputDecoration(labelText: 'Categoria'),
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Por favor, insira a categoria';
+                  }
+                  return null;
+                },
+              ),
+              SizedBox(height: 20),
+              ElevatedButton(
+                onPressed: _cadastrarProduto,
+                child: Text('Cadastrar'),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

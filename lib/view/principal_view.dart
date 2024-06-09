@@ -130,6 +130,13 @@ class _PrincipalViewState extends State<PrincipalView> {
               },
             ),
             IconButtonWidget(
+              icon: Icons.group,
+              label: 'Fornecedores',
+              onTap: () {
+                Navigator.pushNamed(context, 'fornecedor');
+              },
+            ),
+            IconButtonWidget(
               icon: Icons.face,
               label: 'Clientes',
               onTap: () {
@@ -141,13 +148,6 @@ class _PrincipalViewState extends State<PrincipalView> {
               label: 'Agenda',
               onTap: () {
                 Navigator.pushNamed(context, 'agenda');
-              },
-            ),
-            IconButtonWidget(
-              icon: Icons.group,
-              label: 'Fornecedores',
-              onTap: () {
-                Navigator.pushNamed(context, 'fornecedor');
               },
             ),
           ],
