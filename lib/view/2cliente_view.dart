@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mask_text_input_formatter/mask_text_input_formatter.dart';
 
 class Cliente {
   String nome;
@@ -25,7 +26,9 @@ class ListaClientesView extends StatelessWidget {
 
   void _editarCliente(BuildContext context, Cliente cliente, int index) {
     final nomeController = TextEditingController(text: cliente.nome);
-    final dataNascimentoController = TextEditingController(text: cliente.dataNascimento.toIso8601String());
+    final dataNascimentoFormatter = MaskTextInputFormatter(mask: '##/##/####');
+    final dataNascimentoController = TextEditingController(text: _formatDate(cliente.dataNascimento));
+    final cpfFormatter = MaskTextInputFormatter(mask: '###.###.###-##');
     final cpfController = TextEditingController(text: cliente.cpf);
     final sexoController = TextEditingController(text: cliente.sexo);
     final telefoneController = TextEditingController(text: cliente.telefone);
@@ -43,12 +46,15 @@ class ListaClientesView extends StatelessWidget {
               ),
               TextFormField(
                 controller: dataNascimentoController,
+                inputFormatters: [dataNascimentoFormatter],
                 decoration: InputDecoration(labelText: 'Data de Nascimento'),
                 keyboardType: TextInputType.datetime,
               ),
               TextFormField(
                 controller: cpfController,
+                inputFormatters: [cpfFormatter],
                 decoration: InputDecoration(labelText: 'Número do CPF'),
+                keyboardType: TextInputType.number,
               ),
               TextFormField(
                 controller: sexoController,
@@ -72,7 +78,7 @@ class ListaClientesView extends StatelessWidget {
             onPressed: () {
               Cliente clienteAtualizado = Cliente(
                 nome: nomeController.text,
-                dataNascimento: DateTime.parse(dataNascimentoController.text),
+                dataNascimento: _parseDate(dataNascimentoController.text),
                 cpf: cpfController.text,
                 sexo: sexoController.text,
                 telefone: telefoneController.text,
@@ -84,6 +90,19 @@ class ListaClientesView extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+
+  String _formatDate(DateTime date) {
+    return '${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}/${date.year}';
+  }
+
+  DateTime _parseDate(String date) {
+    final parts = date.split('/');
+    return DateTime(
+      int.parse(parts[2]),
+      int.parse(parts[1]),
+      int.parse(parts[0]),
     );
   }
 
@@ -125,30 +144,29 @@ class ListaClientesView extends StatelessWidget {
               itemBuilder: (context, index) {
                 final cliente = clientes[index];
                 return ListTile(
-                        title: Text(cliente.nome),
-                        subtitle: Text(cliente.cpf),
-                        trailing: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            IconButton(
-                              icon: Icon(Icons.edit),
-                              onPressed: () {
-                                _editarCliente(context, cliente, index);
-                              },
-                            ),
-                            IconButton(
-                              icon: Icon(Icons.delete),
-                              onPressed: () {
-                                onDelete(index);
-                              },
-                            ),
-                          ],
-                        ),
-                        onTap: () {
+                  title: Text(cliente.nome),
+                  subtitle: Text(cliente.cpf),
+                  trailing: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      IconButton(
+                        icon: Icon(Icons.edit),
+                        onPressed: () {
                           _editarCliente(context, cliente, index);
                         },
-                      );
-
+                      ),
+                      IconButton(
+                        icon: Icon(Icons.delete),
+                        onPressed: () {
+                          onDelete(index);
+                        },
+                      ),
+                    ],
+                  ),
+                  onTap: () {
+                    _editarCliente(context, cliente, index);
+                  },
+                );
               },
             ),
     );
@@ -167,7 +185,9 @@ class CadastrarClienteView extends StatefulWidget {
 class _CadastrarClienteViewState extends State<CadastrarClienteView> {
   final _formKey = GlobalKey<FormState>();
   final _nomeController = TextEditingController();
+  final _dataNascimentoFormatter = MaskTextInputFormatter(mask: '##/##/####');
   final _dataNascimentoController = TextEditingController();
+  final _cpfFormatter = MaskTextInputFormatter(mask: '###.###.###-##');
   final _cpfController = TextEditingController();
   final _sexoController = TextEditingController();
   final _telefoneController = TextEditingController();
@@ -186,7 +206,7 @@ class _CadastrarClienteViewState extends State<CadastrarClienteView> {
     if (_formKey.currentState!.validate()) {
       Cliente novoCliente = Cliente(
         nome: _nomeController.text,
-        dataNascimento: DateTime.parse(_dataNascimentoController.text),
+        dataNascimento: _parseDate(_dataNascimentoController.text),
         cpf: _cpfController.text,
         sexo: _sexoController.text,
         telefone: _telefoneController.text,
@@ -198,6 +218,15 @@ class _CadastrarClienteViewState extends State<CadastrarClienteView> {
       _limparCampos();
       Navigator.pop(context); // Retorna à lista de clientes após o cadastro
     }
+  }
+
+  DateTime _parseDate(String date) {
+    final parts = date.split('/');
+    return DateTime(
+      int.parse(parts[2]),
+      int.parse(parts[1]),
+      int.parse(parts[0]),
+    );
   }
 
   void _limparCampos() {
@@ -233,6 +262,7 @@ class _CadastrarClienteViewState extends State<CadastrarClienteView> {
               ),
               TextFormField(
                 controller: _dataNascimentoController,
+                inputFormatters: [_dataNascimentoFormatter],
                 decoration: InputDecoration(labelText: 'Data de Nascimento'),
                 keyboardType: TextInputType.datetime,
                 validator: (value) {
@@ -244,7 +274,9 @@ class _CadastrarClienteViewState extends State<CadastrarClienteView> {
               ),
               TextFormField(
                 controller: _cpfController,
+                inputFormatters: [_cpfFormatter],
                 decoration: InputDecoration(labelText: 'Número do CPF'),
+                keyboardType: TextInputType.number,
                 validator: (value) {
                   if (value == null || value.isEmpty) {
                     return 'Por favor, insira o número do CPF';
