@@ -1,13 +1,9 @@
-// ignore_for_file: prefer_const_constructors, sized_box_for_whitespace, prefer_const_literals_to_create_immutables
-
 import 'package:flutter/material.dart';
 import '../controller/login_controller.dart';
-// import 'package:seu_app/telas/tela2.dart';
-// import 'package:seu_app/telas/tela3.dart';
-// import 'package:seu_app/telas/tela4.dart';
+import '3agenda_view.dart'; // Importe a tela AgendaView aqui
 
 class PrincipalView extends StatefulWidget {
-  const PrincipalView({super.key});
+  const PrincipalView({Key? key}) : super(key: key);
 
   @override
   State<PrincipalView> createState() => _PrincipalViewState();
@@ -147,7 +143,10 @@ class _PrincipalViewState extends State<PrincipalView> {
               icon: Icons.calendar_today,
               label: 'Agenda',
               onTap: () {
-                Navigator.pushNamed(context, 'agenda');
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => AgendaView()),
+                );
               },
             ),
           ],

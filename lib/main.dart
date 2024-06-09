@@ -10,6 +10,7 @@ import 'view/login_view.dart';
 import 'view/principal_view.dart';
 import 'view/1produto_view.dart';
 import 'view/2cliente_view.dart';
+import 'view/3agenda_view.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -81,6 +82,7 @@ class _MainAppState extends State<MainApp> {
         'login': (context) => LoginView(),
         'cadastrar': (context) => CadastrarView(),
         'principal': (context) => PrincipalView(),
+        'agenda' :(context) => AgendaView(),
         'cliente': (context) => ListaClientesView(
               clientes: clientes,
               onUpdate: _atualizarCliente,
