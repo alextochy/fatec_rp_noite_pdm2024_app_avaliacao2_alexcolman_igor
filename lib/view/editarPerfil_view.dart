@@ -3,7 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../controller/login_controller.dart';
-import '../controller/usuario_controller.dart'; // Importe o UsuarioController aqui
+import '../controller/usuario_controller.dart';
 
 class EditarPerfilView extends StatefulWidget {
   const EditarPerfilView({Key? key}) : super(key: key);
@@ -72,8 +72,9 @@ class _EditarPerfilViewState extends State<EditarPerfilView> {
               SizedBox(height: 20),
               Text(
                 'Função na Empresa',
-                style: TextStyle(fontWeight: FontWeight.bold),
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
               ),
+              SizedBox(height: 8),
               DropdownButtonFormField(
                 value: _funcaoSelecionada,
                 items: ['Dono', 'Gerente', 'Funcionario'].map((funcao) {
@@ -96,42 +97,60 @@ class _EditarPerfilViewState extends State<EditarPerfilView> {
               SizedBox(height: 20),
               _buildTextField('Telefone', _telefoneController,
                   'Digite o telefone da empresa'),
-              SizedBox(height: 20),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  TextButton(
-                    onPressed: () {
-                      Navigator.pop(context);
-                    },
-                    child: Text('Sair sem Alterações'),
-                  ),
-                  ElevatedButton(
-                    onPressed: () {
-                      UsuarioController().atualizar(
-                        context,
-                        LoginController().idUsuario(),
-                        {
-                          'nome': _nomeUsuarioController.text,
-                          'nomeEmpresa': _nomeEmpresaController.text,
-                          'enderecoEmpresa': _enderecoController.text,
-                          'funcaoEmpresa': _funcaoSelecionada,
-                          'telefone': _telefoneController.text,
-                        },
-                      );
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.green,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10.0),
+              SizedBox(height: 30),
+              Center(
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    TextButton(
+                      onPressed: () {
+                        Navigator.pop(context);
+                      },
+                      child: Text('Voltar'),
+                      style: TextButton.styleFrom(
+                        foregroundColor: Colors.red,
+                        textStyle: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ),
-                    child: Text(
-                      'Salvar Alterações',
-                      style: TextStyle(color: Colors.white),
+                    SizedBox(width: 20),
+                    ElevatedButton(
+                      onPressed: () {
+                        UsuarioController().atualizar(
+                          context,
+                          LoginController().idUsuario(),
+                          {
+                            'nome': _nomeUsuarioController.text,
+                            'nomeEmpresa': _nomeEmpresaController.text,
+                            'enderecoEmpresa': _enderecoController.text,
+                            'funcaoEmpresa': _funcaoSelecionada,
+                            'telefone': _telefoneController.text,
+                          },
+                        );
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.green,
+                        padding: EdgeInsets.symmetric(
+                          horizontal: 30,
+                          vertical: 15,
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10.0),
+                        ),
+                        textStyle: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      child: Text(
+                        'Salvar',
+                        style: TextStyle(color: Colors.white),
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ],
           ),
@@ -147,8 +166,9 @@ class _EditarPerfilViewState extends State<EditarPerfilView> {
       children: [
         Text(
           label,
-          style: TextStyle(fontWeight: FontWeight.bold),
+          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
         ),
+        SizedBox(height: 8),
         TextFormField(
           controller: controller,
           decoration: InputDecoration(
@@ -156,6 +176,7 @@ class _EditarPerfilViewState extends State<EditarPerfilView> {
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(10.0),
             ),
+            contentPadding: EdgeInsets.symmetric(vertical: 10, horizontal: 15),
           ),
         ),
       ],
