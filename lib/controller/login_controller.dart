@@ -1,3 +1,5 @@
+// ignore_for_file: body_might_complete_normally_nullable
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 // ignore: unused_import
@@ -12,29 +14,34 @@ class LoginController {
   // Adiciona a conta de um novo usuário no serviço
   // Firebase Authentication
   //
-  criarConta(context, nome, email, senha) {
+  Future<User?> criarConta(context, nome, email, senha) async {
     if (nome.isEmpty) {
       erro(context, 'Por favor, insira seu nome.');
-      return;
+      return null;
     }
     if (nome.length < 3) {
       erro(context, 'O nome deve ter pelo menos 3 caracteres.');
-      return;
+      return null;
     }
-    FirebaseAuth.instance
-        .createUserWithEmailAndPassword(email: email, password: senha)
-        .then((resultado) {
+    try {
+      UserCredential resultado = await FirebaseAuth.instance
+          .createUserWithEmailAndPassword(email: email, password: senha);
       sucesso(context, 'Usuário criado com sucesso!');
-      Navigator.pop(context);
-    }).catchError((e) {
-      switch (e.code) {
-        case 'email-already-in-use':
-          erro(context, 'O email já foi cadastrado.');
-          break;
-        default:
-          erro(context, 'ERROR: ${e.code.toString()}');
+      return resultado.user;
+    } catch (e) {
+      if (e is FirebaseAuthException) {
+        switch (e.code) {
+          case 'email-already-in-use':
+            erro(context, 'O email já foi cadastrado.');
+            break;
+          default:
+            erro(context, 'ERROR: ${e.code.toString()}');
+        }
+      } else {
+        erro(context, 'Ocorreu um erro inesperado.');
       }
-    });
+      return null;
+    }
   }
 
   //
