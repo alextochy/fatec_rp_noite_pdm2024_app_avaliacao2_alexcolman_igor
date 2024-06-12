@@ -1,100 +1,35 @@
+// ignore_for_file: prefer_const_constructors, prefer_const_literals_to_create_immutables, avoid_unnecessary_containers
+
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:intl/intl.dart';
 import 'package:mask_text_input_formatter/mask_text_input_formatter.dart';
 
-class Cliente {
-  String nome;
-  DateTime dataNascimento;
-  String cpf;
-  String sexo;
-  String telefone;
+import '../controller/login_controller.dart';
+import '../controller/cliente_controller.dart';
+import '../model/cliente.dart';
 
-  Cliente({
-    required this.nome,
-    required this.dataNascimento,
-    required this.cpf,
-    required this.sexo,
-    required this.telefone,
-  });
+class ClienteView extends StatefulWidget {
+  const ClienteView({super.key});
+
+  @override
+  State<ClienteView> createState() => _ClienteViewState();
 }
 
-class ListaClientesView extends StatelessWidget {
-  final List<Cliente> clientes;
-  final Function(Cliente, int) onUpdate;
-  final Function(int) onDelete;
+class _ClienteViewState extends State<ClienteView> {
+  var txtNomeCliente = TextEditingController();
+  final _cpfFormatter = MaskTextInputFormatter(mask: '###.###.###-##');
+  var txtCpfCliente = TextEditingController();
+  var txtEmailCliente = TextEditingController();
+  var txtTelefoneCliente = TextEditingController();
+  final _dataNascimentoFormatter = MaskTextInputFormatter(mask: '##/##/####');
+  var txtDataNascimentoCliente = TextEditingController();
+  final _formKey = GlobalKey<FormState>();
 
-  const ListaClientesView({Key? key, required this.clientes, required this.onUpdate, required this.onDelete}) : super(key: key);
-
-  void _editarCliente(BuildContext context, Cliente cliente, int index) {
-    final nomeController = TextEditingController(text: cliente.nome);
-    final dataNascimentoFormatter = MaskTextInputFormatter(mask: '##/##/####');
-    final dataNascimentoController = TextEditingController(text: _formatDate(cliente.dataNascimento));
-    final cpfFormatter = MaskTextInputFormatter(mask: '###.###.###-##');
-    final cpfController = TextEditingController(text: cliente.cpf);
-    final sexoController = TextEditingController(text: cliente.sexo);
-    final telefoneController = TextEditingController(text: cliente.telefone);
-
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text('Editar Cliente'),
-        content: SingleChildScrollView(
-          child: Column(
-            children: [
-              TextFormField(
-                controller: nomeController,
-                decoration: InputDecoration(labelText: 'Nome do Cliente'),
-              ),
-              TextFormField(
-                controller: dataNascimentoController,
-                inputFormatters: [dataNascimentoFormatter],
-                decoration: InputDecoration(labelText: 'Data de Nascimento'),
-                keyboardType: TextInputType.datetime,
-              ),
-              TextFormField(
-                controller: cpfController,
-                inputFormatters: [cpfFormatter],
-                decoration: InputDecoration(labelText: 'Número do CPF'),
-                keyboardType: TextInputType.number,
-              ),
-              TextFormField(
-                controller: sexoController,
-                decoration: InputDecoration(labelText: 'Sexo'),
-              ),
-              TextFormField(
-                controller: telefoneController,
-                decoration: InputDecoration(labelText: 'Telefone'),
-              ),
-            ],
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.of(context).pop();
-            },
-            child: Text('Cancelar'),
-          ),
-          TextButton(
-            onPressed: () {
-              Cliente clienteAtualizado = Cliente(
-                nome: nomeController.text,
-                dataNascimento: _parseDate(dataNascimentoController.text),
-                cpf: cpfController.text,
-                sexo: sexoController.text,
-                telefone: telefoneController.text,
-              );
-              onUpdate(clienteAtualizado, index);
-              Navigator.of(context).pop();
-            },
-            child: Text('Salvar'),
-          ),
-        ],
-      ),
-    );
-  }
-
-  String _formatDate(DateTime date) {
-    return '${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}/${date.year}';
+  String _formatDate(Timestamp timestamp) {
+    final DateTime dateTime = timestamp.toDate();
+    final DateFormat formatter = DateFormat('dd/MM/yyyy');
+    return formatter.format(dateTime);
   }
 
   DateTime _parseDate(String date) {
@@ -110,319 +45,278 @@ class ListaClientesView extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Lista de Clientes'),
+        iconTheme: IconThemeData(color: Colors.white),
+        title: Padding(
+          padding: const EdgeInsets.all(10.0),
+          child: Text(
+            'Lista de Clientes',
+            style: TextStyle(color: Colors.white),
+          ),
+        ),
         backgroundColor: Colors.blueAccent,
         actions: [
-          IconButton(
-            icon: Icon(Icons.search),
-            onPressed: () {
-              showSearch(
-                context: context,
-                delegate: ClienteSearchDelegate(
-                  clientes: clientes,
-                  onUpdate: onUpdate,
-                  onDelete: onDelete,
-                ),
-              );
-            },
-          ),
-          IconButton(
-            icon: Icon(Icons.add),
-            onPressed: () {
-              Navigator.pushNamed(
-                context,
-                'cadastrarCliente',
-              );
-            },
-          ),
-        ],
-      ),
-      body: clientes.isEmpty
-          ? Center(child: Text('Não existem clientes cadastrados'))
-          : ListView.builder(
-              itemCount: clientes.length,
-              itemBuilder: (context, index) {
-                final cliente = clientes[index];
-                return ListTile(
-                  title: Text(cliente.nome),
-                  subtitle: Text(cliente.cpf),
-                  trailing: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      IconButton(
-                        icon: Icon(Icons.edit),
-                        onPressed: () {
-                          _editarCliente(context, cliente, index);
-                        },
-                      ),
-                      IconButton(
-                        icon: Icon(Icons.delete),
-                        onPressed: () {
-                          onDelete(index);
-                        },
-                      ),
-                    ],
-                  ),
-                  onTap: () {
-                    _editarCliente(context, cliente, index);
-                  },
-                );
+          Padding(
+            padding: const EdgeInsets.fromLTRB(0, 0, 15, 0),
+            child: IconButton(
+              icon: Icon(Icons.add),
+              onPressed: () {
+                salvarCliente(context);
               },
             ),
-    );
-  }
-}
-
-class CadastrarClienteView extends StatefulWidget {
-  final Function(Cliente) onClienteCadastrado;
-
-  const CadastrarClienteView({Key? key, required this.onClienteCadastrado}) : super(key: key);
-
-  @override
-  State<CadastrarClienteView> createState() => _CadastrarClienteViewState();
-}
-
-class _CadastrarClienteViewState extends State<CadastrarClienteView> {
-  final _formKey = GlobalKey<FormState>();
-  final _nomeController = TextEditingController();
-  final _dataNascimentoFormatter = MaskTextInputFormatter(mask: '##/##/####');
-  final _dataNascimentoController = TextEditingController();
-  final _cpfFormatter = MaskTextInputFormatter(mask: '###.###.###-##');
-  final _cpfController = TextEditingController();
-  final _sexoController = TextEditingController();
-  final _telefoneController = TextEditingController();
-
-  @override
-  void dispose() {
-    _nomeController.dispose();
-    _dataNascimentoController.dispose();
-    _cpfController.dispose();
-    _sexoController.dispose();
-    _telefoneController.dispose();
-    super.dispose();
-  }
-
-  void _cadastrarCliente() {
-    if (_formKey.currentState!.validate()) {
-      Cliente novoCliente = Cliente(
-        nome: _nomeController.text,
-        dataNascimento: _parseDate(_dataNascimentoController.text),
-        cpf: _cpfController.text,
-        sexo: _sexoController.text,
-        telefone: _telefoneController.text,
-      );
-      widget.onClienteCadastrado(novoCliente);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Cliente cadastrado com sucesso!')),
-      );
-      _limparCampos();
-      Navigator.pop(context); // Retorna à lista de clientes após o cadastro
-    }
-  }
-
-  DateTime _parseDate(String date) {
-    final parts = date.split('/');
-    return DateTime(
-      int.parse(parts[2]),
-      int.parse(parts[1]),
-      int.parse(parts[0]),
-    );
-  }
-
-  void _limparCampos() {
-    _nomeController.clear();
-    _dataNascimentoController.clear();
-    _cpfController.clear();
-    _sexoController.clear();
-    _telefoneController.clear();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Cadastro de Cliente'),
-        backgroundColor: Colors.blueAccent,
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Form(
-          key: _formKey,
-          child: ListView(
-            children: [
-              TextFormField(
-                controller: _nomeController,
-                decoration: InputDecoration(labelText: 'Nome do Cliente'),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Por favor, insira o nome do cliente';
-                  }
-                  return null;
-                },
-              ),
-              TextFormField(
-                controller: _dataNascimentoController,
-                inputFormatters: [_dataNascimentoFormatter],
-                decoration: InputDecoration(labelText: 'Data de Nascimento'),
-                keyboardType: TextInputType.datetime,
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Por favor, insira a data de nascimento';
-                  }
-                  return null;
-                },
-              ),
-              TextFormField(
-                controller: _cpfController,
-                inputFormatters: [_cpfFormatter],
-                decoration: InputDecoration(labelText: 'Número do CPF'),
-                keyboardType: TextInputType.number,
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Por favor, insira o número do CPF';
-                  }
-                  return null;
-                },
-              ),
-              TextFormField(
-                controller: _sexoController,
-                decoration: InputDecoration(labelText: 'Sexo'),
-                validator: (value) {
-                  if (value == null || value.isEmpty || (value != 'M' && value != 'F')) {
-                    return 'Por favor, insira o sexo (M ou F)';
-                  }
-                  return null;
-                },
-              ),
-              TextFormField(
-                controller: _telefoneController,
-                decoration: InputDecoration(labelText: 'Telefone'),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Por favor, insira o telefone';
-                  }
-                  return null;
-                },
-              ),
-              SizedBox(height: 20),
-              ElevatedButton(
-                onPressed: _cadastrarCliente,
-                child: Text('Cadastrar'),
-              ),
-            ],
           ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(0, 5, 10, 0),
+            child: IconButton(
+              icon: Icon(Icons.search),
+              onPressed: () {
+                Navigator.pushNamed(context, 'clienteSearch');
+              },
+            ),
+          ),
+        ],
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back),
+          onPressed: () {
+            Navigator.pop(context);
+          },
+        ),
+      ),
+
+      // BODY
+      body: Padding(
+        padding: const EdgeInsets.all(10.0),
+        //
+        // LISTAR os(as) cliuentes
+        //
+        child: StreamBuilder<QuerySnapshot>(
+          //fluxo de dados
+          stream: ClienteController().listar().snapshots(),
+          //exibição dos dados
+          builder: (context, snapshot) {
+            //verificar a conectividade
+            switch (snapshot.connectionState) {
+              //sem conexão
+              case ConnectionState.none:
+                return Center(
+                  child: Text("Falha na conexão."),
+                );
+
+              //conexão lenta
+              case ConnectionState.waiting:
+                return Center(
+                  child: CircularProgressIndicator(),
+                );
+
+              //dados recuperados com sucesso
+              default:
+                final dados = snapshot.requireData;
+                if (dados.size > 0) {
+                  //exibir a lista de clientes
+                  return ListView.builder(
+                    itemCount: dados.size,
+                    itemBuilder: (context, index) {
+                      //ID do documento
+                      String id = dados.docs[index].id;
+
+                      //DADOS armazenados no documento
+                      dynamic item = dados.docs[index].data();
+
+                      return Card(
+                        child: ListTile(
+                          title: Text('${item['nomeCliente']}',
+                              style: TextStyle(fontWeight: FontWeight.bold)),
+                          subtitle: Text('CPF: ${item['cpfCliente']}\n'
+                              'E-mail: ${item['emailCliente']}\n'
+                              'Telefone: ${item['telefoneCliente']}\n'
+                              'Aniversário: ${_formatDate(item['dataNascimentoCliente'])}'),
+                          //
+                          // Atualizar e Excluir clientes
+                          //
+                          trailing: SizedBox(
+                            width: 80,
+                            child: Row(
+                              children: [
+                                IconButton(
+                                  onPressed: () {
+                                    txtNomeCliente.text = item['nomeCliente'];
+                                    txtCpfCliente.text = item['cpfCliente'];
+                                    txtEmailCliente.text = item['emailCliente'];
+                                    txtTelefoneCliente.text =
+                                        item['telefoneCliente'];
+                                    txtDataNascimentoCliente.text = _formatDate(
+                                        item['dataNascimentoCliente']);
+                                    salvarCliente(context, docId: id);
+                                  },
+                                  icon: Icon(Icons.edit_rounded),
+                                ),
+                                IconButton(
+                                  onPressed: () {
+                                    ClienteController().excluir(context, id);
+                                  },
+                                  icon: Icon(Icons.delete_rounded),
+                                ),
+                              ],
+                            ),
+                          ),
+                          onTap: () {},
+                        ),
+                      );
+                    },
+                  );
+                } else {
+                  return Center(
+                    child: Text("Nenhum(a) cliente encontrada."),
+                  );
+                }
+            }
+          },
         ),
       ),
     );
   }
-}
 
-class ClienteSearchDelegate extends SearchDelegate<String> {
-  final List<Cliente> clientes;
-  final Function(Cliente, int) onUpdate;
-  final Function(int) onDelete;
+  //
+  // ADICIONAR CLIENTE
+  //
+  void salvarCliente(context, {docId}) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        // retorna um objeto do tipo Dialog
+        return AlertDialog(
+          title: Text((docId == null) ? "Adicionar Cliente" : "Editar Cliente"),
+          content: Form(
+            key: _formKey,
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  TextFormField(
+                    controller: txtNomeCliente,
+                    decoration: InputDecoration(
+                      labelText: 'Nome',
+                      hintText: 'Digite o nome',
+                    ),
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Por favor, digite o nome do cliente';
+                      }
+                      return null;
+                    },
+                  ),
+                  TextFormField(
+                    controller: txtCpfCliente,
+                    inputFormatters: [_cpfFormatter],
+                    decoration: InputDecoration(labelText: 'Número do CPF'),
+                    keyboardType: TextInputType.number,
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Por favor, insira o número do CPF';
+                      }
+                      return null;
+                    },
+                  ),
+                  TextFormField(
+                      controller: txtEmailCliente,
+                      decoration: InputDecoration(
+                        labelText: 'E-mail',
+                        hintText: 'Digite o e-mail',
+                      ),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Por favor, insira um email.';
+                        }
+                        const pattern = r'^[^@]+@[^@]+\.[^@]+';
+                        final regExp = RegExp(pattern);
 
-  ClienteSearchDelegate({required this.clientes, required this.onUpdate, required this.onDelete});
+                        if (!regExp.hasMatch(value)) {
+                          return 'Por favor, insira um email válido.';
+                        }
+                        return null;
+                      }),
+                  TextFormField(
+                    keyboardType: TextInputType.number,
+                    controller: txtTelefoneCliente,
+                    decoration: InputDecoration(
+                      labelText: 'Telefone',
+                      hintText: 'Digite numero com DDD sem ()',
+                    ),
+                    validator: (value) {
+                      if (value == null ||
+                          value.isEmpty ||
+                          !RegExp('^((1[1-9])|([2-9][0-9]))((3[0-9]{3}[0-9]{4})|(9[0-9]{3}[0-9]{5}))')
+                              .hasMatch(value)) {
+                        return 'Por favor, digite um telefone válido';
+                      }
+                      return null;
+                    },
+                  ),
+                  TextFormField(
+                    controller: txtDataNascimentoCliente,
+                    inputFormatters: [_dataNascimentoFormatter],
+                    decoration:
+                        InputDecoration(labelText: 'Data de Nascimento'),
+                    keyboardType: TextInputType.datetime,
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Por favor, insira a data de nascimento';
+                      }
+                      final RegExp dateRegExp = RegExp(r'^\d{2}/\d{2}/\d{4}$');
 
-  @override
-  List<Widget> buildActions(BuildContext context) {
-    return [
-      IconButton(
-        icon: Icon(Icons.clear),
-        onPressed: () {
-          query = '';
-        },
-      ),
-    ];
-  }
+                      if (!dateRegExp.hasMatch(value)) {
+                        return 'Por favor, insira uma data válida no formato dd/mm/yyyy';
+                      }
+                      return null;
+                    },
+                  ),
+                ],
+              ),
+            ),
+          ),
+          actions: <Widget>[
+            TextButton(
+              child: Text("fechar"),
+              onPressed: () {
+                txtNomeCliente.clear();
+                txtCpfCliente.clear();
+                txtEmailCliente.clear();
+                txtTelefoneCliente.clear();
+                txtDataNascimentoCliente.clear();
+                Navigator.of(context).pop();
+              },
+            ),
+            ElevatedButton(
+              child: Text("salvar"),
+              onPressed: () {
+                //criação do objeto
+                if (_formKey.currentState!.validate()) {
+                  var c = Cliente(
+                    LoginController().idUsuario(),
+                    txtNomeCliente.text,
+                    txtCpfCliente.text,
+                    txtEmailCliente.text,
+                    txtTelefoneCliente.text,
+                    Timestamp.fromDate(
+                        _parseDate(txtDataNascimentoCliente.text)),
+                  );
 
-  @override
-  Widget buildLeading(BuildContext context) {
-    return IconButton(
-      icon: Icon(Icons.arrow_back),
-      onPressed: () {
-        close(context, '');
-      },
-    );
-  }
+                  if (docId == null) {
+                    ClienteController().adicionar(context, c);
+                  } else {
+                    ClienteController().atualizar(context, docId, c);
+                  }
 
-  @override
-  Widget buildResults(BuildContext context) {
-    final resultados = clientes
-        .where((cliente) =>
-            cliente.nome.toLowerCase().contains(query.toLowerCase()))
-        .toList();
-    return ListaClientesView(clientes: resultados, onUpdate: onUpdate, onDelete: onDelete);
-  }
-
-  @override
-  Widget buildSuggestions(BuildContext context) {
-    final resultados = clientes
-        .where((cliente) =>
-            cliente.nome.toLowerCase().contains(query.toLowerCase()))
-        .toList();
-    return ListView.builder(
-      itemCount: resultados.length,
-      itemBuilder: (context, index) {
-        final cliente = resultados[index];
-        return ListTile(
-          title: Text(cliente.nome),
-          subtitle: Text(cliente.cpf),
-          onTap: () {
-            query = cliente.nome;
-            showResults(context);
-          },
+                  txtNomeCliente.clear();
+                  txtCpfCliente.clear();
+                  txtEmailCliente.clear();
+                  txtTelefoneCliente.clear();
+                  txtDataNascimentoCliente.clear();
+                }
+              },
+            ),
+          ],
         );
       },
-    );
-  }
-}
-
-void main() {
-  runApp(MaterialApp(
-    home: MyApp(),
-    routes: {
-      'cadastrarCliente': (context) => CadastrarClienteView(
-            onClienteCadastrado: (cliente) {
-              // Adicione o cliente à lista de clientes
-            },
-          ),
-    },
-  ));
-}
-
-class MyApp extends StatefulWidget {
-  @override
-  _MyAppState createState() => _MyAppState();
-}
-
-class _MyAppState extends State<MyApp> {
-  List<Cliente> _clientes = [];
-
-  void _adicionarCliente(Cliente cliente) {
-    setState(() {
-      _clientes.add(cliente);
-    });
-  }
-
-  void _atualizarCliente(Cliente cliente, int index) {
-    setState(() {
-      _clientes[index] = cliente;
-    });
-  }
-
-  void _removerCliente(int index) {
-    setState(() {
-      _clientes.removeAt(index);
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return ListaClientesView(
-      clientes: _clientes,
-      onUpdate: _atualizarCliente,
-      onDelete: _removerCliente,
     );
   }
 }

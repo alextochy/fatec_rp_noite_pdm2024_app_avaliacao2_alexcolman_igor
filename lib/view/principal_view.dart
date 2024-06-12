@@ -1,6 +1,8 @@
+// ignore_for_file: prefer_const_constructors, prefer_const_literals_to_create_immutables
+
 import 'package:flutter/material.dart';
 import '../controller/login_controller.dart';
-import '3agenda_view.dart'; // Importe a tela AgendaView aqui
+// Importe a tela AgendaView aqui
 
 class PrincipalView extends StatefulWidget {
   const PrincipalView({Key? key}) : super(key: key);
@@ -14,6 +16,7 @@ class _PrincipalViewState extends State<PrincipalView> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        iconTheme: IconThemeData(color: Colors.white),
         toolbarHeight: 50,
         centerTitle: true,
         backgroundColor: Colors.blueAccent,
@@ -60,7 +63,17 @@ class _PrincipalViewState extends State<PrincipalView> {
               decoration: BoxDecoration(
                 color: Colors.blueAccent,
               ),
-              child: Text('Perfil', style: TextStyle(color: Colors.white)),
+              child: Text('Menu', style: TextStyle(color: Colors.white)),
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(0, 10, 0, 10),
+              child: ListTile(
+                leading: Icon(Icons.account_circle_outlined),
+                title: const Text('Editar Perfil'),
+                onTap: () {
+                  Navigator.pushNamed(context, 'editarPerfil');
+                },
+              ),
             ),
             Padding(
               padding: const EdgeInsets.fromLTRB(0, 10, 0, 10),
@@ -126,13 +139,6 @@ class _PrincipalViewState extends State<PrincipalView> {
               },
             ),
             IconButtonWidget(
-              icon: Icons.group,
-              label: 'Fornecedores',
-              onTap: () {
-                Navigator.pushNamed(context, 'fornecedor');
-              },
-            ),
-            IconButtonWidget(
               icon: Icons.face,
               label: 'Clientes',
               onTap: () {
@@ -140,13 +146,17 @@ class _PrincipalViewState extends State<PrincipalView> {
               },
             ),
             IconButtonWidget(
+              icon: Icons.local_shipping_outlined,
+              label: 'Saída',
+              onTap: () {
+                Navigator.pushNamed(context, 'saida');
+              },
+            ),
+            IconButtonWidget(
               icon: Icons.calendar_today,
               label: 'Agenda',
               onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => AgendaView()),
-                );
+                Navigator.pushNamed(context, 'agenda');
               },
             ),
           ],
