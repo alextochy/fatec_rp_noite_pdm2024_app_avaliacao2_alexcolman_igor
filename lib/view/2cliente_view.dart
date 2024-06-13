@@ -165,7 +165,7 @@ class _ClienteViewState extends State<ClienteView> {
                   );
                 } else {
                   return Center(
-                    child: Text("Nenhum(a) cliente encontrada."),
+                    child: Text("Nenhum(a) cliente encontrado(a)."),
                   );
                 }
             }
