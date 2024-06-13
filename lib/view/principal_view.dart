@@ -2,7 +2,6 @@
 
 import 'package:flutter/material.dart';
 import '../controller/login_controller.dart';
-// Importe a tela AgendaView aqui
 
 class PrincipalView extends StatefulWidget {
   const PrincipalView({Key? key}) : super(key: key);
@@ -12,6 +11,20 @@ class PrincipalView extends StatefulWidget {
 }
 
 class _PrincipalViewState extends State<PrincipalView> {
+  late Future<String> _futureUsuario;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUser();
+  }
+
+  void _loadUser() {
+    setState(() {
+      _futureUsuario = LoginController().usuarioLogado();
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -30,7 +43,7 @@ class _PrincipalViewState extends State<PrincipalView> {
                       fontSize: 20)),
             ),
             FutureBuilder<String>(
-              future: LoginController().usuarioLogado(),
+              future: _futureUsuario,
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.done) {
                   return Directionality(
@@ -59,11 +72,27 @@ class _PrincipalViewState extends State<PrincipalView> {
         child: ListView(
           padding: EdgeInsets.zero,
           children: [
-            const DrawerHeader(
-              decoration: BoxDecoration(
-                color: Colors.blueAccent,
-              ),
-              child: Text('Menu', style: TextStyle(color: Colors.white)),
+            FutureBuilder<String>(
+              future: _futureUsuario,
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.done) {
+                  return UserAccountsDrawerHeader(
+                    decoration: BoxDecoration(
+                      color: Colors.blueAccent,
+                    ),
+                    accountName: Text(snapshot.data.toString(),
+                        style: TextStyle(color: Colors.white)),
+                    accountEmail: Text(''),
+                  );
+                }
+                return DrawerHeader(
+                  decoration: BoxDecoration(
+                    color: Colors.blueAccent,
+                  ),
+                  child: Text('Carregando...',
+                      style: TextStyle(color: Colors.white)),
+                );
+              },
             ),
             Padding(
               padding: const EdgeInsets.fromLTRB(0, 10, 0, 10),
@@ -71,7 +100,9 @@ class _PrincipalViewState extends State<PrincipalView> {
                 leading: Icon(Icons.account_circle_outlined),
                 title: const Text('Editar Perfil'),
                 onTap: () {
-                  Navigator.pushNamed(context, 'editarPerfil');
+                  Navigator.pushNamed(context, 'editarPerfil').then((_) {
+                    _loadUser();
+                  });
                 },
               ),
             ),
@@ -182,13 +213,28 @@ class IconButtonWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     return InkWell(
       onTap: onTap,
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(icon, size: 50.0, color: Colors.blueAccent),
-          SizedBox(height: 10),
-          Text(label, style: TextStyle(fontSize: 16.0)),
-        ],
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(15),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.grey.withOpacity(0.3),
+              spreadRadius: 3,
+              blurRadius: 5,
+              offset: Offset(0, 3),
+            ),
+          ],
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(icon, size: 50.0, color: Colors.blueAccent),
+            SizedBox(height: 10),
+            Text(label,
+                style: TextStyle(fontSize: 16.0, fontWeight: FontWeight.bold)),
+          ],
+        ),
       ),
     );
   }
